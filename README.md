@@ -31,15 +31,15 @@ uvx --from https://github.com/KennethJAllen/proper-pixel-art.git ppa -i <input_p
 
 #### Flags
 
-| Flag                         | Description                                                                                               |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `-i`, `--input` `<path>`     | Source image file in pixel-art-style                                                                      |
-| `-o`, `--output` `<path>`    | Output directory or file path for result. (default: '.')                                                  |
-| `-c`, `--colors` `<int>`     | Number of colors for output. May need to try a few different values. (default 16)                         |
-| `-p`, `--pixel-size` `<int>` | Size of each “pixel” in the output. (default: 1)                                                          |
-| `-t`, `--transparent`        | Output with transparent background. (default: off)                                                        |
-| `-w`, `--pixel-width`        | Width of the pixels in the input image. If not set, it will be determined automatically. (default: None)  |
-| `-s`, `--upscale-factor`     | Initial image upscale factor. Increasing this may help detect pixel edges. (default 2)                    |
+| Flag                             | Description                                                                                               |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `-i`, `--input` `<path>`         | Source image file in pixel-art-style                                                                      |
+| `-o`, `--output` `<path>`        | Output directory or file path for result. (default: '.')                                                  |
+| `-c`, `--colors` `<int>`         | Number of colors for output. May need to try a few different values. (default 16)                         |
+| `-p`, `--pixel-size` `<int>`     | Size of each “pixel” in the output. (default: 1)                                                          |
+| `-t`, `--transparent` `<bool>`   | Output with transparent background. (default: off)                                                        |
+| `-w`, `--pixel-width` `<int>`    | Width of the pixels in the input image. If not set, it will be determined automatically. (default: None)  |
+| `-s`, `--upscale-factor` `<int>` | Initial image upscale factor. Increasing this may help detect pixel edges. (default 2)                    |
 
 #### Example
 
@@ -70,7 +70,7 @@ result.save('output.png')
   - May need to try a few values if the colors don't look right.
   - 8, 16, 32, or 64 typically works.
 
-- `pixel_size` : `int`
+- `result_scale` : `int`
 
   - Upscale result after algorithm is complete if not None.
 
@@ -81,9 +81,11 @@ result.save('output.png')
 - `transparent_background` : `bool`
   - If True, floos fills each corner of the result with transparent alpha.
 
-- `intermediate_dir` : `Path | None` 
-
+- `intermediate_dir` : `Path | None`
   - Directory to save images visualizing intermediate steps of algorithm. Useful for development.
+
+- `pixel_width` : `Path | None`
+  - Width of the pixels in the input image. If not set, it will be determined automatically. It may be helpful to increase this parameter if not enough pixel edges are being detected.
 
 #### Returns
 
