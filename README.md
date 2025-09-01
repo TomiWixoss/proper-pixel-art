@@ -31,13 +31,15 @@ uvx --from https://github.com/KennethJAllen/proper-pixel-art.git ppa -i <input_p
 
 #### Flags
 
-| Flag                         | Description                                                                      |
-| ---------------------------- | -------------------------------------------------------------------------------- |
-| `-i`, `--input` `<path>`     | Source image file in pixel-art-style                                             |
-| `-o`, `--output` `<path>`    | Output directory or file path for result                                         |
-| `-c`, `--colors` `<int>`     | Number of colors for output. May need to try a few different values (default 16) |
-| `-p`, `--pixel-size` `<int>` | Size of each “pixel” in the output (default: 1)                                  |
-| `-t`, `--transparent`        | Output with transparent background (default: off)                                |
+| Flag                         | Description                                                                                               |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `-i`, `--input` `<path>`     | Source image file in pixel-art-style                                                                      |
+| `-o`, `--output` `<path>`    | Output directory or file path for result. (default: '.')                                                  |
+| `-c`, `--colors` `<int>`     | Number of colors for output. May need to try a few different values. (default 16)                         |
+| `-p`, `--pixel-size` `<int>` | Size of each “pixel” in the output. (default: 1)                                                          |
+| `-t`, `--transparent`        | Output with transparent background. (default: off)                                                        |
+| `-w`, `--pixel-width`        | Width of the pixels in the input image. If not set, it will be determined automatically. (default: None)  |
+| `-s`, `--upscale-factor`     | Initial image upscale factor. Increasing this may help detect pixel edges. (default 2)                    |
 
 #### Example
 
