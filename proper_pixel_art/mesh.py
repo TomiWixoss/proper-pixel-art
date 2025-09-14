@@ -55,7 +55,7 @@ def detect_grid_lines(edges: np.ndarray,
     if hough_lines is None:
         return lines_x, lines_y
 
-    # Loop over all detected lines, only keep the ones that are close to verticle or horizontal
+    # Loop over all detected lines, only keep the ones that are close to vertical or horizontal
     for x1, y1, x2, y2 in hough_lines[:,0]:
         dx, dy = x2 - x1, y2 - y1
         angle = abs(np.arctan2(dy, dx))
@@ -134,7 +134,7 @@ def compute_mesh(
     """
     Finds grid lines of a high resolution noisy image.
     - Uses Canny edge detector to find vertical and horizontal edges
-    - Closes small gets between edges with morphological closing
+    - Closes small gaps between edges with morphological closing
     - Uses Hough transform to detect pixel edge lines
     - Finds true width of pixels from line differences
     - Completes mesh by filling in gaps between identified lines

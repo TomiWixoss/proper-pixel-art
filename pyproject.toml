@@ -25,4 +25,5 @@ build-backend = "hatchling.build"
 dev = [
     "ipykernel>=6.29.5",
     "pylint>=3.3.7",
+    "pytest>=8.4.2",
 ]

@@ -30,7 +30,7 @@ def parse_args() -> argparse.Namespace:
         help="Number of colors to quantize the image to. From 1 to 256"
     )
     parser.add_argument(
-        "-s", "--result_scale",
+        "-s", "--result-scale",
         dest="result_scale",
         type=int,
         default=1,

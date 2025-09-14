@@ -24,9 +24,9 @@ First, obtain a source pixel-art-style image (e.g. a pixel-art-style image gener
 ### CLI
 
 ```bash
-uv run ppa -i <input_path> -o <output_path> -c <num_colors> -p <pixel_size> [-t]
+uv run ppa -i <input_path> -o <output_path> -c <num_colors> -s <result_scale> [-t]
 # or directly using uvx
-uvx --from https://github.com/KennethJAllen/proper-pixel-art.git ppa -i <input_path> -o <output_path> -c <num_colors> -p <pixel_size> [-t]
+uvx --from https://github.com/KennethJAllen/proper-pixel-art.git ppa -i <input_path> -o <output_path> -c <num_colors> -s <result_scale> [-t]
 ```
 
 #### Flags
@@ -36,14 +36,14 @@ uvx --from https://github.com/KennethJAllen/proper-pixel-art.git ppa -i <input_p
 | `-i`, `--input` `<path>`         | Source image file in pixel-art-style                                                                      |
 | `-o`, `--output` `<path>`        | Output directory or file path for result. (default: '.')                                                  |
 | `-c`, `--colors` `<int>`         | Number of colors for output. May need to try a few different values. (default 16)                         |
-| `-s`, `--result_scale` `<int>`     | Width/height of each “pixel” in the output. (default: 1)                                                          |
+| `-s`, `--result-scale` `<int>`     | Width/height of each “pixel” in the output. (default: 1)                                                          |
 | `-t`, `--transparent` `<bool>`   | Output with transparent background. (default: off)                                                        |
 | `-w`, `--pixel-width` `<int>`    | Width of the pixels in the input image. If not set, it will be determined automatically. (default: None)  |
 | `-u`, `--upscale-factor` `<int>` | Initial image upscale factor. Increasing this may help detect pixel edges. (default 2)                    |
 
 #### Example
 
-`uv run ppa -i assets/blob/blob.png -o . -c 16 -s 20 -t`
+`uv run ppa -i assets/blob/blob.png -c 16 -s 20 -t`
 
 ### Python
 
@@ -79,17 +79,17 @@ result.save('output.png')
   - Upscale initial image. This may help detect lines.
 
 - `transparent_background` : `bool`
-  - If True, floos fills each corner of the result with transparent alpha.
+  - If True, flood fills each corner of the result with transparent alpha.
 
 - `intermediate_dir` : `Path | None`
   - Directory to save images visualizing intermediate steps of algorithm. Useful for development.
 
-- `pixel_width` : `Path | None`
+- `pixel_width` : `int | None`
   - Width of the pixels in the input image. If not set, it will be determined automatically. It may be helpful to increase this parameter if not enough pixel edges are being detected.
 
 #### Returns
 
-A PIL image with 
+A PIL image with true pixel resolution and quantized colors. 
 
 ## Examples
 
@@ -159,7 +159,7 @@ Here are a few examples. A mesh is computed, where each cell corresponds to one 
 </table>
 
 ### Pumpkin
-- Screenshot from Google Images of Stardew Valley asset. This is an adversarial exmaple as the source image is both low quality and the object is round.
+- Screenshot from Google Images of Stardew Valley asset. This is an adversarial example as the source image is both low quality and the object is round.
 
 <table align="center" width="100%">
   <tr>
@@ -187,7 +187,7 @@ Here are a few examples. A mesh is computed, where each cell corresponds to one 
 
 <img src="./assets/mountain/real.jpg" width="50%" alt="Original mountain"/>
 
-- Here are the results of first requesting a pixalated version of the mountain, then using the tool to get a true resolution pixel art version.
+- Here are the results of first requesting a pixelated version of the mountain, then using the tool to get a true resolution pixel art version.
 
 <table align="center" width="100%">
   <tr>
@@ -211,7 +211,7 @@ The result of pixel-art style images from LLMs are noisy, high resolution images
 
 The current approach to turning pixel art into useable assets for games are either
 1) Use naive downsampling which does not give a result that is faithful to the original image.
-2) Manually re-create the image in the approperiate resolution pixel by pixel.
+2) Manually re-create the image in the appropriate resolution pixel by pixel.
 
 ## Algorithm
 - The main algorithm solves these challenges. Here is a high level overview. We will apply it step by step on this example image of blob pixel art that was generated from GPT-4o.
@@ -227,7 +227,6 @@ The current approach to turning pixel art into useable assets for games are eith
 
 2) Upscale by a factor of 2 using nearest neighbor.
     - This can help identify the correct pixel mesh.
-    - It is possible that a similar result could be achived by tuning the parameters in the following steps. Further investigation is required.
 
 3) Find edges of the pixel art using [Canny edge detection](https://docs.opencv.org/4.x/da/d22/tutorial_py_canny.html).
 
@@ -255,3 +254,14 @@ The current approach to turning pixel art into useable assets for games are eith
     - Result upscaled by a factor of $20 \times$ using nearest neighbor.
 
 <img src="./assets/blob/upsampled.png" width="80%" alt="blob upscaled"/>
+
+## Testing
+
+To test algorithm changes and verify output quality:
+
+```bash
+# Run visual output tests
+uv run pytest -s
+```
+
+The tests run the algorithm on all test assets (`assets/{name}/{name}.png`) and save outputs to `tests/outputs/` for manual visual inspection.

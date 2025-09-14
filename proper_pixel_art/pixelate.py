@@ -23,10 +23,10 @@ def pixelate(
         if it is too low, pixels that should be different colors will be the same color
     - result_scale:
         Upsample result by result_scale factor after algorithm is complete if not None.
-    - upsample_factor:
+    - initial_upsample_factor:
         Upsample original image by this factor. It may help detect lines.
     - transparent_background:
-        If True, floos fills each corner of the result with transparent alpha.
+        If True, flood fills each corner of the result with transparent alpha.
     - intermediate_dir:
         directory to save images visualizing intermediate steps.
     - pixel_width:
