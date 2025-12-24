@@ -20,7 +20,7 @@ def process(
         return None
     return pixelate(
         image,
-        num_colors=num_colors,
+        num_colors=num_colors if num_colors > 0 else None,
         transparent_background=transparent,
         scale_result=scale if scale > 1 else None,
         initial_upscale_factor=initial_upscale,
@@ -57,7 +57,9 @@ def create_demo():
                 )
 
         with gr.Row():
-            num_colors = gr.Slider(2, 64, value=16, step=1, label="Colors")
+            num_colors = gr.Slider(
+                0, 64, value=16, step=1, label="Colors (0 = skip quantization)"
+            )
             scale = gr.Slider(1, 20, value=1, step=1, label="Scale Result")
 
         with gr.Row():
