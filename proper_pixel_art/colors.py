@@ -10,6 +10,14 @@ from PIL.Image import Quantize
 RGB = tuple[int, int, int]
 RGBA = tuple[int, int, int, int]
 
+# Alpha threshold for determining pixel opacity
+# Pixels with alpha >= this value are considered opaque
+ALPHA_THRESHOLD = 128
+
+
+def _is_majority_transparent(opaque_count: int, total_count: int) -> bool:
+    return opaque_count <= total_count / 2
+
 
 def _rgb_dist(a: RGB, b: RGB) -> int:
     """Naive color distance"""
@@ -63,7 +71,7 @@ def _pick_background(colors: list[RGB]) -> RGB:
 
 def clamp_alpha(
     image: Image.Image,
-    alpha_threshold: int = 128,
+    alpha_threshold: int = ALPHA_THRESHOLD,
     mode: str = "RGB",
     background_hex: str | None = None,
 ) -> Image.Image:
@@ -90,14 +98,65 @@ def clamp_alpha(
     return Image.composite(base, background, mask)
 
 
-def get_cell_color(cell_pixels: np.ndarray) -> RGB:
+def extract_and_scale_alpha(image: Image.Image, scale_factor: int = 1) -> np.ndarray:
+    """
+    Extract alpha channel from an RGBA image and scale it.
+
+    Args:
+        image: RGBA PIL Image
+        scale_factor: Integer scale factor for resizing (default 1 = no scaling)
+
+    Returns:
+        Numpy array of alpha channel values (uint8), scaled if scale_factor != 1
+    """
+    # Extract alpha channel from RGBA image
+    alpha_channel = np.array(image.convert("RGBA"))[:, :, 3]
+
+    # Scale alpha channel if needed
+    if scale_factor != 1:
+        alpha_img = Image.fromarray(alpha_channel, mode="L")
+        new_size = (alpha_img.width * scale_factor, alpha_img.height * scale_factor)
+        scaled_alpha_img = alpha_img.resize(new_size, Image.Resampling.NEAREST)
+        return np.array(scaled_alpha_img)
+    else:
+        return alpha_channel
+
+
+def get_opaque_cell_color(cell_pixels: np.ndarray) -> RGBA:
     """
     cell_pixels: shape (height_cell, width_cell, 3), dtype=uint8
-    returns the most frequent RGB tuple in the cell_pixels block.
+    returns the most frequent RGB tuple in the cell_pixels block, with 255 in fourth entry for opaque alpha.
     """
     # flatten to tuple of pixel values
     flat = list(map(tuple, cell_pixels.reshape(-1, 3)))
     cell_color = Counter(flat).most_common(1)[0][0]
+    return (*cell_color, 255)
+
+
+def get_cell_color_with_alpha(cell_pixels: np.ndarray, cell_alpha: np.ndarray) -> RGBA:
+    """
+    Select representative color for a quantized cell, considering transparency.
+
+    Decision logic:
+    - If >=50% of pixels are transparent (alpha < ALPHA_THRESHOLD), return (0,0,0,0)
+    - Otherwise, return the most common RGB color with full opacity (R,G,B,255)
+
+    Args:
+        cell_pixels: shape (height, width, 3), dtype=uint8 (RGB from quantized image)
+        cell_alpha: shape (height, width), dtype=uint8 (alpha channel from original)
+
+    Returns:
+        RGBA tuple - either (0,0,0,0) for transparent or (R,G,B,255) for opaque
+    """
+    total_pixels = cell_alpha.size
+    opaque_count = np.sum(cell_alpha >= ALPHA_THRESHOLD)
+
+    # If majority is transparent (>= 50%), return fully transparent
+    if _is_majority_transparent(opaque_count, total_pixels):
+        return (0, 0, 0, 0)
+
+    # Otherwise return most common color with full opacity
+    cell_color = get_opaque_cell_color(cell_pixels)
     return cell_color
 
 
@@ -164,7 +223,7 @@ def _dominant_rgb_by_binning(rgb_pixels: np.ndarray) -> RGB:
 
 
 def get_cell_color_skip_quantization(
-    cell_pixels: np.ndarray, alpha_threshold: int = 128
+    cell_pixels: np.ndarray, alpha_threshold: int = ALPHA_THRESHOLD
 ) -> RGBA:
     """
     Select representative RGBA color for a cell when quantization is skipped.
@@ -182,7 +241,7 @@ def get_cell_color_skip_quantization(
 
     Args:
         cell_pixels: shape (height, width, 4), dtype=uint8 (RGBA)
-        alpha_threshold: minimum alpha to consider pixel opaque (default 128)
+        alpha_threshold: minimum alpha to consider pixel opaque (default ALPHA_THRESHOLD)
 
     Returns:
         RGBA tuple - either (0,0,0,0) for transparent or (R,G,B,255) for opaque
@@ -199,7 +258,7 @@ def get_cell_color_skip_quantization(
     opaque_pixels = pixels[opaque_mask]
 
     # If majority is transparent (>= 50%), return fully transparent
-    if len(opaque_pixels) <= total_pixels / 2:
+    if _is_majority_transparent(len(opaque_pixels), total_pixels):
         return (0, 0, 0, 0)
 
     # Get RGB of opaque pixels and find dominant color
@@ -258,8 +317,11 @@ def most_common_boundary_color(image: Image.Image) -> RGB:
 def make_background_transparent(image: Image.Image) -> Image.Image:
     """
     Make the background fully transparent by:
-      1) take the most common color on the boundary
-      2) setting alpha=0 for all pixels equal to that color
+      1) Identifying the most common color on the image boundary
+      2) Setting alpha=0 for all pixels matching that color
+
+    Note: This sets transparency for ALL pixels matching the boundary color,
+    not just boundary pixels (no flood fill).
     """
     background_color = most_common_boundary_color(image)
     image_rgba = image.convert("RGBA")
