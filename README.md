@@ -2,7 +2,7 @@
 
 ## Summary
 
-Converts noisy, high resolution pixel-art style images such as those produced by generative models or sourced from low-quality web uploads to clean, true-resolution pixel-art assets.
+Converts noisy, high resolution pixel-art style images produced by generative models or sourced from low-quality web uploads to clean, true-resolution pixel-art assets.
 
 ### Challenges
 
