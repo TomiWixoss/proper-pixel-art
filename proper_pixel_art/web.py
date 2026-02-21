@@ -14,6 +14,8 @@ def process(
     scale: int,
     initial_upscale: int,
     pixel_width: int,
+    remove_watermark: bool,
+    trim: bool,
 ) -> Image.Image | None:
     """Process image through pixelation pipeline."""
     if image is None:
@@ -25,6 +27,8 @@ def process(
         scale_result=scale if scale > 1 else None,
         initial_upscale_factor=initial_upscale,
         pixel_width=pixel_width if pixel_width > 0 else None,
+        remove_watermark=remove_watermark,
+        trim=trim,
     )
 
 
@@ -34,14 +38,14 @@ def create_demo():
 
     with gr.Blocks(title="Proper Pixel Art") as demo:
         gr.Markdown(
-            "# Proper Pixel Art\nConvert AI-generated pixel art to true pixel resolution"
+            "# Proper Pixel Art\nChuyển đổi ảnh pixel art do AI tạo ra thành độ phân giải pixel thực thụ"
         )
 
         with gr.Row():
             with gr.Column():
                 input_img = gr.Image(
                     type="pil",
-                    label="Input",
+                    label="Ảnh đầu vào",
                     format="png",
                     image_mode="RGBA",
                     height=IMG_HEIGHT,
@@ -49,7 +53,7 @@ def create_demo():
             with gr.Column():
                 output_img = gr.Image(
                     type="pil",
-                    label="Output",
+                    label="Ảnh kết quả",
                     format="png",
                     image_mode="RGBA",
                     height=IMG_HEIGHT,
@@ -58,19 +62,21 @@ def create_demo():
 
         with gr.Row():
             num_colors = gr.Slider(
-                0, 64, value=16, step=1, label="Colors (0 = skip quantization)"
+                0, 64, value=16, step=1, label="Số lượng màu (0 = bỏ qua nén màu)"
             )
-            scale = gr.Slider(1, 20, value=1, step=1, label="Scale Result")
+            scale = gr.Slider(1, 20, value=1, step=1, label="Phóng to kết quả")
 
         with gr.Row():
-            initial_upscale = gr.Slider(1, 4, value=2, step=1, label="Initial Upscale")
+            initial_upscale = gr.Slider(1, 4, value=2, step=1, label="Phóng to ban đầu")
             pixel_width = gr.Slider(
-                0, 50, value=0, step=1, label="Pixel Width (0=auto)"
+                0, 50, value=0, step=1, label="Độ rộng pixel (0=tự động)"
             )
 
         with gr.Row():
-            transparent = gr.Checkbox(value=False, label="Transparent Background")
-            btn = gr.Button("Pixelate", variant="primary")
+            transparent = gr.Checkbox(value=False, label="Nền trong suốt")
+            remove_watermark = gr.Checkbox(value=False, label="Xóa Watermark AI")
+            trim = gr.Checkbox(value=False, label="Cắt bỏ vùng thừa")
+            btn = gr.Button("Chuyển đổi", variant="primary")
 
         btn.click(
             fn=process,
@@ -81,6 +87,8 @@ def create_demo():
                 scale,
                 initial_upscale,
                 pixel_width,
+                remove_watermark,
+                trim,
             ],
             outputs=output_img,
         )

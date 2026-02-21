@@ -9,7 +9,7 @@ from proper_pixel_art import pixelate
 
 
 def add_pixelation_args(
-    parser: argparse.ArgumentParser, group_name: str = "Pixelation options"
+    parser: argparse.ArgumentParser, group_name: str = "Tùy chọn Pixelation"
 ) -> argparse.ArgumentParser:
     """Add common pixelation arguments to an argument parser.
 
@@ -27,7 +27,7 @@ def add_pixelation_args(
         dest="num_colors",
         type=int,
         default=None,
-        help="Number of colors to quantize the image to (1-256). Omit to skip quantization and preserve all colors.",
+        help="Số lượng màu để nén ảnh (1-256). Bỏ qua để giữ nguyên tất cả các màu.",
     )
     pixel_group.add_argument(
         "-s",
@@ -35,7 +35,7 @@ def add_pixelation_args(
         dest="scale_result",
         type=int,
         default=1,
-        help="Width of the 'pixels' in the output image (default: 1).",
+        help="Độ rộng của mỗi 'pixel' trong ảnh kết quả (mặc định: 1).",
     )
     pixel_group.add_argument(
         "-t",
@@ -43,7 +43,7 @@ def add_pixelation_args(
         dest="transparent",
         action="store_true",
         default=False,
-        help="Produce a transparent background in the output if set.",
+        help="Tạo nền trong suốt cho kết quả đầu ra.",
     )
     pixel_group.add_argument(
         "-w",
@@ -51,7 +51,7 @@ def add_pixelation_args(
         dest="pixel_width",
         type=int,
         default=None,
-        help="Width of the pixels in the input image. If not set, it will be determined automatically.",
+        help="Độ rộng của pixel trong ảnh đầu vào. Nếu không đặt, nó sẽ được xác định tự động.",
     )
     pixel_group.add_argument(
         "-u",
@@ -60,9 +60,9 @@ def add_pixelation_args(
         type=int,
         default=2,
         help=(
-            "Initial image upscale factor in mesh detection algorithm. "
-            "If the detected spacing is too large, "
-            "it may be useful to increase this value."
+            "Hệ số phóng to ảnh ban đầu trong thuật toán phát hiện lưới. "
+            "Nếu khoảng cách lưới phát hiện quá lớn, "
+            "việc tăng giá trị này có thể hữu ích."
         ),
     )
     pixel_group.add_argument(
@@ -70,31 +70,31 @@ def add_pixelation_args(
         dest="remove_watermark",
         action="store_true",
         default=False,
-        help="Automatically detect and remove AI generator watermarks (like Gemini) from bottom right corner.",
+        help="Tự động phát hiện và xóa watermark do AI tạo ra (như Gemini) ở góc dưới bên phải.",
     )
     pixel_group.add_argument(
         "--trim",
         dest="trim",
         action="store_true",
         default=False,
-        help="Trim transparent border around the sprite so it fits tightly with no empty pixels.",
+        help="Cắt bỏ phần viền trong suốt xung quanh vật thể để kết quả vừa khít, không có pixel rỗng.",
     )
     return parser
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Generate a true-resolution pixel-art image from a source image."
+        description="Tạo ảnh pixel-art độ phân giải thực từ ảnh nguồn."
     )
     parser.add_argument(
-        "input_path", type=Path, nargs="?", help="Path to the source input file."
+        "input_path", type=Path, nargs="?", help="Đường dẫn đến tệp nguồn đầu vào."
     )
     parser.add_argument(
         "-i",
         "--input",
         dest="input_path_flag",
         type=Path,
-        help="Path to the source input file.",
+        help="Đường dẫn đến tệp nguồn đầu vào.",
     )
     parser.add_argument(
         "-o",
@@ -102,7 +102,7 @@ def parse_args() -> argparse.Namespace:
         dest="out_path",
         type=Path,
         default=Path("."),
-        help="Path where the pixelated image will be saved. Can be either a directory or a file path.",
+        help="Đường dẫn nơi ảnh pixelated sẽ được lưu. Có thể là thư mục hoặc đường dẫn tệp.",
     )
 
     # Add common pixelation arguments
@@ -112,7 +112,7 @@ def parse_args() -> argparse.Namespace:
 
     # Either take the input as the first argument or use the -i flag
     if args.input_path is None and args.input_path_flag is None:
-        parser.error("You must provide an input path (positional or with -i).")
+        parser.error("Bạn phải cung cấp đường dẫn đầu vào (đối số hoặc qua flag -i).")
     args.input_path = (
         args.input_path if args.input_path is not None else args.input_path_flag
     )

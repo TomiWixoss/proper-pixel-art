@@ -22,9 +22,9 @@ def load_api_key() -> str:
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise ValueError(
-            "OPENAI_API_KEY not found in environment. "
-            "Please create a .env file with your API key. "
-            "See scripts/README.md for setup instructions."
+            "Không tìm thấy OPENAI_API_KEY trong môi trường. "
+            "Vui lòng tạo tệp .env với khóa API của bạn. "
+            "Xem scripts/README.md để biết hướng dẫn cài đặt."
         )
     return api_key
 
@@ -32,22 +32,22 @@ def load_api_key() -> str:
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Generate images using OpenAI's gpt-image-1.5 and pixelate them.",
+        description="Tạo ảnh bằng gpt-image-1.5 của OpenAI và pixelate chúng.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  # Basic usage
-  python scripts/generate_pixel_art.py --prompt "A cute pixel art cat"
+Ví dụ:
+  # Cách dùng cơ bản
+  python scripts/ppa_gen.py --prompt "Một chú mèo pixel art dễ thương"
 
-  # With all OpenAI options
-  python scripts/generate_pixel_art.py \\
-    --prompt "A 16 bit pixel art fantasy castle" \\
-    --size 1792x1024 \\
+  # Với tất cả tùy chọn OpenAI
+  python scripts/ppa_gen.py \\
+    --prompt "Một lâu đài giả tưởng pixel art 16 bit" \\
+    --size 1024x1024 \\
     --n 2
 
-  # With pixelation options
-  python scripts/generate_pixel_art.py \\
-    --prompt "A 16 bit pixel art robot" \\
+  # Với tùy chọn pixelation
+  python scripts/ppa_gen.py \\
+    --prompt "Một robot pixel art 16 bit" \\
     --colors 16 \\
     --scale-result 20 \\
     --transparent
@@ -55,26 +55,26 @@ Examples:
     )
 
     # OpenAI API parameters
-    openai_group = parser.add_argument_group("OpenAI API options")
+    openai_group = parser.add_argument_group("Tùy chọn OpenAI API")
     openai_group.add_argument(
         "--prompt",
         type=str,
         required=True,
-        help="Text description for image generation.",
+        help="Mô tả văn bản để tạo hình ảnh.",
     )
     openai_group.add_argument(
         "--size",
         type=str,
         choices=["1024x1024", "1024x1536", "1536x1024", "auto"],
         default="1024x1024",
-        help="Generated image size (default: 1024x1024).",
+        help="Kích thước ảnh được tạo (mặc định: 1024x1024).",
     )
     openai_group.add_argument(
         "--n",
         type=int,
         choices=range(1, 11),
         default=1,
-        help="Number of images to generate (1-10, default: 1).",
+        help="Số lượng ảnh cần tạo (1-10, mặc định: 1).",
     )
 
     # Add common pixelation arguments
@@ -87,7 +87,7 @@ Examples:
         dest="output_dir",
         type=Path,
         default=Path("."),
-        help="Output directory for generated images (default: current directory).",
+        help="Thư mục đầu ra cho các ảnh được tạo (mặc định: thư mục hiện tại).",
     )
 
     return parser.parse_args()
@@ -95,8 +95,8 @@ Examples:
 
 def generate_images(client: OpenAI, args: argparse.Namespace) -> list[Image.Image]:
     """Generate images using OpenAI API."""
-    print(f"Generating {args.n} image(s) with prompt: '{args.prompt}'")
-    print(f"Settings: size={args.size}")
+    print(f"Đang tạo {args.n} ảnh với prompt: '{args.prompt}'")
+    print(f"Cấu hình: size={args.size}")
 
     response = client.images.generate(
         model="gpt-image-1.5",
@@ -121,7 +121,7 @@ def process_image(
     index: int = 0,
 ) -> tuple[Path, Path]:
     """Pixelate and save a single image."""
-    print(f"Processing image {index + 1}...")
+    print(f"Đang xử lý ảnh {index + 1}...")
 
     # Generate filenames
     suffix = f"_{index}" if args.n > 1 else ""
@@ -133,10 +133,10 @@ def process_image(
 
     # Save original
     original_image.save(original_path)
-    print(f"Saved original: {original_path}")
+    print(f"Đã lưu ảnh gốc: {original_path}")
 
     # Pixelate
-    print(f"Pixelating image {index + 1}...")
+    print(f"Đang pixelate ảnh {index + 1}...")
     pixelated_image = pixelate(
         original_image,
         num_colors=args.num_colors,
@@ -148,7 +148,7 @@ def process_image(
 
     # Save pixelated
     pixelated_image.save(pixelated_path)
-    print(f"Saved pixelated: {pixelated_path}")
+    print(f"Đã lưu ảnh pixelated: {pixelated_path}")
 
     return original_path, pixelated_path
 
@@ -165,7 +165,7 @@ def main() -> None:
         api_key = load_api_key()
         client = OpenAI(api_key=api_key)
     except ValueError as e:
-        print(f"Error: {e}")
+        print(f"Lỗi: {e}")
         return
 
     # Generate timestamp for this batch
@@ -179,11 +179,11 @@ def main() -> None:
         for i, img in enumerate(images):
             process_image(img, args, timestamp, i)
 
-        print(f"\nSuccessfully processed {len(images)} image(s)")
-        print(f"Output directory: {args.output_dir.absolute()}")
+        print(f"\nĐã xử lý thành công {len(images)} ảnh")
+        print(f"Thư mục đầu ra: {args.output_dir.absolute()}")
 
     except Exception as e:
-        print(f"Error occurred: {type(e).__name__}: {e}")
+        print(f"Đã xảy ra lỗi: {type(e).__name__}: {e}")
         raise
 
 

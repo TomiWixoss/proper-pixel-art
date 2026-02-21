@@ -1,94 +1,94 @@
-# Pixel Art Generation Scripts
+# Các Script Tạo Ảnh Pixel Art
 
-Scripts for generating pixel art using AI models.
+Các script để tạo ảnh pixel art bằng cách sử dụng các mô hình AI.
 
 ## ppa-gen
 
-Generate pixel art images using OpenAI's gpt-image-1.5 API and automatically pixelate them using the proper-pixel-art library.
+Tạo ảnh pixel art bằng API gpt-image-1.5 của OpenAI và tự động pixelate chúng bằng thư viện proper-pixel-art.
 
-### Setup
+### Cài đặt
 
-#### Install Dependencies
+#### Cài đặt các gói phụ thuộc
 
 ```bash
 uv sync --extra scripts
 ```
 
-#### Configure Environment
+#### Cấu hình môi trường
 
-1. [Create a new API key](https://platform.openai.com/api-keys)
-2. Create a `.env` file in the project root
-3. Add your API key to `.env`:
+1. [Tạo khóa API mới](https://platform.openai.com/api-keys)
+2. Tạo tệp `.env` trong thư mục gốc của dự án
+3. Thêm khóa API của bạn vào `.env`:
 4. `OPENAI_API_KEY=sk-your-api-key-here`
 
-### Usage
+### Cách sử dụng
 
-#### Basic usage
+#### Cách dùng cơ bản
 
 ```bash
-uv run ppa-gen --prompt "A 16 bit cute pixel art cat"
+uv run ppa-gen --prompt "Một chú mèo pixel art 16 bit dễ thương"
 ```
 
-#### With Additional Options
+#### Với các tùy chọn bổ sung
 
 ```bash
 uv run ppa-gen \
-  --prompt "A 16 bit pixel art robot character with a transparent background" \
+  --prompt "Một nhân vật robot pixel art 16 bit với nền trong suốt" \
   --scale-result 10 \
   --transparent \
   --n 2
 ```
 
-### Command Line Options
+### Tùy chọn dòng lệnh
 
-#### OpenAI API Options
+#### Tùy chọn OpenAI API
 
-| Flag | Type | Default | Description |
+| Cờ | Kiểu | Mặc định | Mô tả |
 |------|------|---------|-------------|
-| `--prompt` | str | (required) | Text description for image generation |
-| `--size` | str | 1024x1024 | Image size: '1024x1024', '1024x1536', or '1536x1024' |
-| `--n` | int | 1 | Number of images to generate (1-10) |
+| `--prompt` | str | (bắt buộc) | Mô tả bằng văn bản để tạo ảnh |
+| `--size` | str | 1024x1024 | Kích thước ảnh: '1024x1024', '1024x1536', hoặc '1536x1024' |
+| `--n` | int | 1 | Số lượng ảnh cần tạo (1-10) |
 
-#### Pixelation Options
+#### Tùy chọn Pixelation
 
-| Flag | Type | Default | Description |
+| Cờ | Kiểu | Mặc định | Mô tả |
 |------|------|---------|-------------|
-| `-c`, `--colors` | int | None | Number of colors (1-256). Omit to preserve all colors |
-| `-s`, `--scale-result` | int | 1 | Width of each pixel in output image |
-| `-t`, `--transparent` | flag | False | Produce transparent background |
-| `-w`, `--pixel-width` | int | None | Width of pixels in input (auto-detected if omitted) |
-| `-u`, `--initial-upscale` | int | 2 | Initial upscale factor for mesh detection |
+| `-c`, `--colors` | int | None | Số lượng màu (1-256). Bỏ qua để giữ nguyên tất cả các màu |
+| `-s`, `--scale-result` | int | 1 | Độ rộng của từng pixel trong ảnh kết quả |
+| `-t`, `--transparent` | cờ | False | Tạo nền trong suốt |
+| `-w`, `--pixel-width` | int | None | Độ rộng của pixel trong đầu vào (tự động phát hiện nếu bỏ qua) |
+| `-u`, `--initial-upscale` | int | 2 | Hệ số phóng to ban đầu để phát hiện lưới |
 
-#### Output Options
+#### Tùy chọn đầu ra
 
-| Flag | Type | Default | Description |
+| Cờ | Kiểu | Mặc định | Mô tả |
 |------|------|---------|-------------|
-| `-o`, `--output-dir` | path | '.' | Directory for generated images |
+| `-o`, `--output-dir` | path | '.' | Thư mục cho các ảnh được tạo |
 
-### Output Files
+### Tệp đầu ra
 
-Generated files are named with timestamps, ending with `original.png` for original AI-generated image and `pixelated.png` for pixelated version.
+Các tệp được tạo được đặt tên theo mốc thời gian, kết thúc bằng `original.png` cho ảnh AI gốc và `pixelated.png` cho phiên bản đã pixelated.
 
-### Tips for Best Results
+### Mẹo để có kết quả tốt nhất
 
-- Ask for a "16 bit pixel art" for pixel art images that are more aligned to a grid.
-- Ask for a transparent background when generating characters to make the background transparent.
+- Yêu cầu "16 bit pixel art" cho các ảnh pixel art căn chỉnh theo lưới tốt hơn.
+- Yêu cầu nền trong suốt khi tạo nhân vật để làm nền (background) biến mất.
 
-### Example
+### Ví dụ
 
-```uv run ppa-gen --prompt "A 16 bit pixel art blob with a transparent background"```
+```uv run ppa-gen --prompt "Một khối blob pixel art 16 bit với nền trong suốt"```
 
 <table align="center" width="100%">
   <tr>
     <td width="33%">
       <img src="https://raw.githubusercontent.com/KennethJAllen/proper-pixel-art/main/assets/blob/blob.png" style="width:100%;" />
-      <br><small>Noisy, High Resolution</small>
+      <br><small>Độ phân giải cao, bị nhiễu</small>
     </td>
     <td width="33%">
       <img src="https://raw.githubusercontent.com/KennethJAllen/proper-pixel-art/main/assets/blob/result.png" style="width:100%;" />
-      <br><small>True Pixel Resolution</small>
+      <br><small>Độ phân giải pixel thực</small>
     </td>
   </tr>
 </table>
 
-See the main project README for more examples.
+Xem tệp README chính của dự án để biết thêm ví dụ.
