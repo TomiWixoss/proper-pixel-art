@@ -65,6 +65,13 @@ def add_pixelation_args(
             "it may be useful to increase this value."
         ),
     )
+    pixel_group.add_argument(
+        "--remove-watermark",
+        dest="remove_watermark",
+        action="store_true",
+        default=False,
+        help="Automatically detect and remove AI generator watermarks (like Gemini) from bottom right corner.",
+    )
     return parser
 
 
@@ -134,6 +141,7 @@ def main() -> None:
         transparent_background=args.transparent,
         pixel_width=args.pixel_width,
         initial_upscale_factor=args.initial_upscale,
+        remove_watermark=args.remove_watermark,
     )
 
     pixelated.save(out_path)

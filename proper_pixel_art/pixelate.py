@@ -76,6 +76,7 @@ def pixelate(
     transparent_background: bool = False,
     intermediate_dir: Path | None = None,
     pixel_width: int | None = None,
+    remove_watermark: bool = False,
 ) -> Image.Image:
     """
     Computes the true resolution pixel art image.
@@ -102,6 +103,9 @@ def pixelate(
 
     Returns the true pixelated image.
     """
+    if remove_watermark:
+        image = utils.remove_generative_watermark(image)
+
     image_rgba = image.convert("RGBA")
 
     # Calculate the pixel mesh lines

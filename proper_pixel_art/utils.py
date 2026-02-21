@@ -1,6 +1,8 @@
 """Utility functions"""
 
+from proper_pixel_art import colors
 from PIL import Image, ImageDraw
+import numpy as np
 
 Lines = list[int]  # Lines are a list of pixel indices for an image
 Mesh = tuple[
@@ -18,6 +20,50 @@ def crop_border(image: Image.Image, num_pixels: int = 1) -> Image.Image:
     box = (num_pixels, num_pixels, width - num_pixels, height - num_pixels)
     cropped = image.crop(box)
     return cropped
+
+
+def remove_generative_watermark(image: Image.Image) -> Image.Image:
+    """
+    Detects and removes a watermark (like Gemini's) in the bottom right corner
+    by filling it with the surrounding background color.
+    """
+    arr = np.array(image.convert("RGBA"))
+    h, w = arr.shape[:2]
+
+    # Ensure image is large enough
+    if h < 300 or w < 300:
+        return image
+
+    # Look at bottom-right 250x250
+    bottom_right = arr[h - 250 : h, w - 250 : w]
+
+    # Calculate median color of the bottom right corner (background color)
+    bg_color = np.median(bottom_right, axis=(0, 1))
+
+    # Calculate difference using float to avoid uint8 underflow
+    diff = np.linalg.norm(bottom_right[:, :, :3].astype(np.float32) - bg_color[:3], axis=2)
+    watermark_mask = diff > 30  # Threshold
+
+    # Fill the watermark area with the background color
+    if np.any(watermark_mask):
+        rows, cols = np.where(watermark_mask)
+        r_min, r_max = rows.min(), rows.max()
+        c_min, c_max = cols.min(), cols.max()
+
+        # Give some padding to ensure smooth removal
+        r_min = max(0, r_min - 5)
+        r_max = min(250, r_max + 5)
+        c_min = max(0, c_min - 5)
+        c_max = min(250, c_max + 5)
+
+        # If the detected bounding box covers too much area, it might not be a watermark
+        if (r_max - r_min) < 180 and (c_max - c_min) < 220:
+            bottom_right[r_min:r_max, c_min:c_max] = bg_color.astype(np.uint8)
+            arr[h - 250 : h, w - 250 : w] = bottom_right
+            return Image.fromarray(arr, image.mode)
+
+    return image
+
 
 
 def overlay_grid_lines(
