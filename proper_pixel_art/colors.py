@@ -127,10 +127,11 @@ def get_opaque_cell_color(cell_pixels: np.ndarray) -> RGBA:
     cell_pixels: shape (height_cell, width_cell, 3), dtype=uint8
     returns the most frequent RGB tuple in the cell_pixels block, with 255 in fourth entry for opaque alpha.
     """
-    # flatten to tuple of pixel values
-    flat = list(map(tuple, cell_pixels.reshape(-1, 3)))
-    cell_color = Counter(flat).most_common(1)[0][0]
-    return (*cell_color, 255)
+    flat = cell_pixels.reshape(-1, 3)
+    if len(flat) == 0:
+        return (0, 0, 0, 0)
+    mean_color = np.mean(flat, axis=0).astype(np.uint8)
+    return (int(mean_color[0]), int(mean_color[1]), int(mean_color[2]), 255)
 
 
 def get_cell_color_with_alpha(cell_pixels: np.ndarray, cell_alpha: np.ndarray) -> RGBA:
@@ -261,10 +262,10 @@ def get_cell_color_skip_quantization(
     if _is_majority_transparent(len(opaque_pixels), total_pixels):
         return (0, 0, 0, 0)
 
-    # Get RGB of opaque pixels and find dominant color
+    # Get RGB of opaque pixels and find mean color for visual accuracy
     rgb_pixels = opaque_pixels[:, :3]
-    r, g, b = _dominant_rgb_by_binning(rgb_pixels)
-    return (int(r), int(g), int(b), 255)
+    mean_color = np.mean(rgb_pixels, axis=0).astype(np.uint8)
+    return (int(mean_color[0]), int(mean_color[1]), int(mean_color[2]), 255)
 
 
 def palette_img(
@@ -314,29 +315,27 @@ def most_common_boundary_color(image: Image.Image) -> RGB:
     return mode_color  # (R, G, B)
 
 
-def make_background_transparent(image: Image.Image) -> Image.Image:
+def make_background_transparent(image: Image.Image, tolerance: int = 40) -> Image.Image:
     """
     Make the background fully transparent by:
       1) Identifying the most common color on the image boundary
-      2) Setting alpha=0 for all pixels matching that color
+      2) Setting alpha=0 for all pixels matching that color (within a noise tolerance)
 
     Note: This sets transparency for ALL pixels matching the boundary color,
-    not just boundary pixels (no flood fill).
+    not just boundary pixels.
     """
     background_color = most_common_boundary_color(image)
     image_rgba = image.convert("RGBA")
-    px = list(image_rgba.getdata())
+    arr = np.array(image_rgba)
 
-    out = []
-    for r, g, b, a in px:
-        # If the color is the same as the background color, make it transparent
-        if (r, g, b) == background_color:
-            out.append((r, g, b, 0))
-        else:
-            out.append((r, g, b, a or 255))
+    bg_arr = np.array(background_color)
+    diff = np.linalg.norm(arr[:, :, :3].astype(np.float32) - bg_arr, axis=2)
 
-    image_rgba.putdata(out)
-    return image_rgba
+    # Where diff is within tolerance, make alpha 0
+    bg_mask = diff < tolerance
+    arr[bg_mask, 3] = 0
+
+    return Image.fromarray(arr, mode="RGBA")
 
 
 def main():

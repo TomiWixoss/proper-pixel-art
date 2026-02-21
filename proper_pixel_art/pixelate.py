@@ -108,6 +108,10 @@ def pixelate(
 
     image_rgba = image.convert("RGBA")
 
+    if transparent_background:
+        # Pre-process transparency so background colors are excluded from mean downsampling
+        image_rgba = colors.make_background_transparent(image_rgba, tolerance=40)
+
     # Calculate the pixel mesh lines
     mesh_lines, upscale_factor = mesh.compute_mesh_with_scaling(
         image_rgba,
@@ -116,36 +120,25 @@ def pixelate(
         pixel_width=pixel_width,
     )
 
-    # Process colors: either quantize or preserve original (with alpha)
-    skip_quantization = num_colors is None
-    if skip_quantization:
-        # Preserve alpha: pass RGBA directly, let downsample filter by alpha
-        processed_img = image_rgba
-    else:
-        processed_img = colors.palette_img(
-            image_rgba, num_colors=num_colors, output_dir=intermediate_dir
-        )
+    # Scale the original image up to match the dimensions for the calculated mesh
+    scaled_img = utils.scale_img(image_rgba, upscale_factor)
 
-    # Scale the processed image to match the dimensions for the calculated mesh
-    scaled_img = utils.scale_img(processed_img, upscale_factor)
-
-    # Extract and scale alpha channel for quantized path
-    scaled_alpha_array = (
-        None
-        if skip_quantization
-        else colors.extract_and_scale_alpha(image_rgba, upscale_factor)
-    )
-
-    # Downsample the image to 1 pixel per cell in the mesh
+    # Downsample the image to 1 pixel per cell in the mesh using Mean color to perfectly resemble original from afar
     result = downsample(
         scaled_img,
         mesh_lines,
-        skip_quantization=skip_quantization,
-        original_alpha=scaled_alpha_array,
+        skip_quantization=True,
     )
 
-    if transparent_background:
-        result = colors.make_background_transparent(result)
+    # Process colors: Quantize the tiny downscaled image if requested
+    if num_colors is not None:
+        # Save alpha of the tiny image
+        small_alpha = result.split()[3]
+        result = colors.palette_img(
+            result, num_colors=num_colors, output_dir=intermediate_dir
+        )
+        result = result.convert("RGBA")
+        result.putalpha(small_alpha)
 
     if scale_result is not None:
         result = utils.scale_img(result, int(scale_result))
