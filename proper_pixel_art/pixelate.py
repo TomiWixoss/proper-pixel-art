@@ -77,6 +77,7 @@ def pixelate(
     intermediate_dir: Path | None = None,
     pixel_width: int | None = None,
     remove_watermark: bool = False,
+    trim: bool = False,
 ) -> Image.Image:
     """
     Computes the true resolution pixel art image.
@@ -139,6 +140,9 @@ def pixelate(
         )
         result = result.convert("RGBA")
         result.putalpha(small_alpha)
+
+    if trim:
+        result = utils.trim_transparent(result)
 
     if scale_result is not None:
         result = utils.scale_img(result, int(scale_result))

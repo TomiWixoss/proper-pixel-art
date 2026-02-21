@@ -65,6 +65,32 @@ def remove_generative_watermark(image: Image.Image) -> Image.Image:
     return image
 
 
+def trim_transparent(image: Image.Image) -> Image.Image:
+    """
+    Crop away all fully-transparent rows and columns around the
+    non-transparent content, so the sprite fits tightly with no
+    empty border pixels.
+    """
+    arr = np.array(image.convert("RGBA"))
+    alpha = arr[:, :, 3]
+
+    # Find rows and cols that have at least one non-transparent pixel
+    non_empty_rows = np.any(alpha > 0, axis=1)
+    non_empty_cols = np.any(alpha > 0, axis=0)
+
+    if not np.any(non_empty_rows) or not np.any(non_empty_cols):
+        return image  # entirely transparent, nothing to trim
+
+    row_indices = np.where(non_empty_rows)[0]
+    col_indices = np.where(non_empty_cols)[0]
+
+    top, bottom = row_indices[0], row_indices[-1] + 1
+    left, right = col_indices[0], col_indices[-1] + 1
+
+    cropped = arr[top:bottom, left:right]
+    return Image.fromarray(cropped, mode="RGBA")
+
+
 
 def overlay_grid_lines(
     image: Image.Image,

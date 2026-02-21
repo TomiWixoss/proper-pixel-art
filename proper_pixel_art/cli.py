@@ -72,6 +72,13 @@ def add_pixelation_args(
         default=False,
         help="Automatically detect and remove AI generator watermarks (like Gemini) from bottom right corner.",
     )
+    pixel_group.add_argument(
+        "--trim",
+        dest="trim",
+        action="store_true",
+        default=False,
+        help="Trim transparent border around the sprite so it fits tightly with no empty pixels.",
+    )
     return parser
 
 
@@ -142,6 +149,7 @@ def main() -> None:
         pixel_width=args.pixel_width,
         initial_upscale_factor=args.initial_upscale,
         remove_watermark=args.remove_watermark,
+        trim=args.trim,
     )
 
     pixelated.save(out_path)
